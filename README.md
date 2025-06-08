@@ -1,98 +1,124 @@
-# 🧠 Trading Strategies with AngelOne API
+# 📈 Trading Strategies Backtester
 
-A modular and extensible Python trading bot that simulates and visualizes **technical trading strategies** using historical stock data. Built with **paper trading** support, strategy injection, capital tracking, and chart visualizations.
+This project is a modular **stock trading strategy backtester** in Python. It allows you to test different algorithmic trading strategies like **RSI** and **Moving Average Crossover** on historical stock data (e.g., Reliance Industries).
+
+You can simulate trades, track P&L, and visualize executed orders, technical indicators, and cash usage over time — all in a clean and extensible structure.
 
 ---
 
 ## 🚀 Features
 
-- ✅ SMA crossover strategy (SMA 5 vs SMA 20)
-- ✅ Capital allocation (e.g., 20% of ₹10,000)
-- ✅ Paper trading simulation (no real trades)
-- ✅ Executed trade logs and performance stats
-- ✅ Clean chart with only actual trades
-- ✅ Easily extendable with new strategies
+- ✅ Strategy selector (RSI or SMA crossover)
+- 📊 Visual charts (price, RSI, cash usage)
+- 💼 Capital allocation logic
+- 🧠 Modular architecture (easy to extend with new strategies)
+- 🧪 Paper trading mode with simulated P&L
+- 🗂️ Organized project structure
+- 🧹 `.gitignore` to keep environments and cache clean
 
 ---
 
-## 📊 Strategy Logic
+## 🧠 Strategies Implemented
 
-**Current Strategy: SMA Crossover**
-- **Buy** when `SMA_5 > SMA_20`
-- **Sell** when `SMA_5 < SMA_20`
-- Optional: Combine with RSI filters (available in `moving_average.py`)
+| Strategy | Description |
+|----------|-------------|
+| **RSI Strategy** | Buys when RSI < 30, sells when RSI > 70 |
+| **SMA Crossover** | Buys when short SMA crosses above long SMA and RSI confirms |
 
 ---
 
-## 📁 Folder Structure
+## 📂 Project Structure
 
 ```
 trading-strategies/
+│
 ├── broker/
-│   └── angel_api.py              # AngelOne API wrapper
-├── models/
-│   ├── base_model.py             # Strategy base class
-│   └── moving_average.py         # SMA strategy implementation
-├── utils/
-│   └── trade_engine.py           # Core trading simulation engine
+│   └── angel_api.py              # Simulated trading API
+├── config/
+│   └── config.env                # (Optional) API keys or config
 ├── data/
-│   └── historical_data.csv       # Example dataset
-├── main.py                       # Run your simulation here
-├── requirements.txt              # Install dependencies
-└── README.md                     # This file
-```
-
----
-
-## 🛠 Getting Started
-
-### 1. Install requirements
-```bash
-pip install -r requirements.txt
-```
-
-### 2. Add your API credentials to `config.env` (if using AngelOne live later)
-
-### 3. Run the bot
-```bash
-python main.py
+│   └── historical_data.csv       # Input data (from Yahoo Finance etc.)
+├── logs/
+│   └── trade_log.txt             # Trade logs (if used)
+├── models/
+│   ├── moving_average.py         # Moving Average Strategy
+│   └── rsi_strategy.py           # RSI Strategy
+├── utils/
+│   ├── indicators.py             # Indicator calculations
+│   ├── plotting.py               # Plotting helper for charts
+│   └── trade_engine.py           # Backtest engine
+├── main.py                       # Entry point
+└── requirements.txt              # Python dependencies
 ```
 
 ---
 
 ## 📈 Example Output
 
-- P&L report in terminal
-- Trade chart showing **only executed trades**
-- Strategy visualization with SMA and Buy/Sell markers
+- ✅ Executed buy/sell signals on price chart  
+- 🟣 RSI chart with oversold/overbought zones  
+- 💵 Capital usage (remaining cash vs investment)
+
+![Example Chart](docs/example-chart.png) <!-- Replace with actual image URL or path -->
 
 ---
 
-## 📸 Sample Chart
+## 🛠️ Setup Instructions
 
-> Replace this with your own screenshot when ready
+```bash
+# Clone repo
+git clone https://github.com/raysofhopes/trading-strategies.git
+cd trading-strategies
 
-![Sample Chart](https://user-images.githubusercontent.com/placeholder/chart.png)
+# Create and activate virtual environment
+python3 -m venv venv
+source venv/bin/activate
+
+# Install dependencies
+pip install -r requirements.txt
+```
 
 ---
 
-## 👤 Author
+## 📊 Run the Backtester
+
+```bash
+python main.py
+```
+
+You'll be prompted to select a strategy (`1` for RSI or `2` for SMA Crossover).
+
+---
+
+## ✅ Sample Output
+
+```
+--- TRADE STATS ---
+Total Trades: 3
+Wins: 2 | Losses: 1
+Win Rate: 66.67%
+Net P&L: ₹350.45
+Final Capital from ₹6000.00: ₹6350.45
+Currently Invested: ₹0.00
+Remaining Cash: ₹6350.45
+```
+
+---
+
+## 🤝 Contributions
+
+Want to add Bollinger Bands or MACD strategies? Fork this repo and start building! PRs welcome.
+
+---
+
+## 📧 Contact
 
 **Souvik Ray**  
-📧 souvikray@live.com  
+📧 [souvikray@live.com](mailto:souvikray@live.com)  
 🔗 [LinkedIn](https://www.linkedin.com/in/souvik-ray-a74b93162/)
 
 ---
 
-## 📌 Future Plans
+## 📌 License
 
-- [ ] Add RSI, MACD, Bollinger Band strategies  
-- [ ] Add Streamlit dashboard  
-- [ ] Add real-time trade execution via SmartAPI  
-- [ ] Add logging & backtest export to CSV  
-
----
-
-## 📃 License
-
-MIT — feel free to use, fork, and build on top of it.
+MIT License. Feel free to use, modify, and share this project.
