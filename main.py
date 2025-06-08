@@ -5,52 +5,77 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 
-# Load data
+# --- Load historical stock data ---
 data = pd.read_csv("data/historical_data.csv")
 
-# Setup
+# --- Initialize API (paper trading mode) ---
 api = AngelAPI(paper_mode=True)
+
+# --- Apply strategy ---
 strategy = MovingAverageStrategy("RELIANCE", data)
 df = strategy.generate_signals()
+df["date"] = pd.to_datetime(df["date"])
 
-# Run backtest using TradeEngine with 20% allocation of ₹10,000
-engine = TradeEngine(api, df, capital=10000, allocation=0.2)
+# --- Simulate trades ---
+engine = TradeEngine(api, df, capital=10000, allocation=0.6)
 engine.simulate()
 engine.summary()
 
-# Extract only executed trades from engine
-executed_buys = [trade["buy_date"] for trade in engine.executed_trades]
-executed_buy_prices = [trade["buy_price"] for trade in engine.executed_trades]
-executed_sells = [trade["sell_date"] for trade in engine.executed_trades]
-executed_sell_prices = [trade["sell_price"] for trade in engine.executed_trades]
+# --- Executed Trades for Plotting ---
+executed_df = pd.DataFrame(engine.executed_trades)
+executed_df["entry_date"] = pd.to_datetime(executed_df["entry_date"])
+executed_df["exit_date"] = pd.to_datetime(executed_df["exit_date"])
 
-# Plot
-fig, ax = plt.subplots(figsize=(14, 7))
+# --- Capital History for Cash Usage Chart ---
+capital_df = pd.DataFrame(engine.capital_history)
+capital_df["date"] = pd.to_datetime(capital_df["date"])
 
-# Price and SMAs
-ax.plot(df["date"], df["close"], label="Close Price", color="blue", linewidth=1.5)
-ax.plot(df["date"], df["SMA_5"], label="SMA 5", linestyle="--", linewidth=1, color="orange", alpha=0.7)
-ax.plot(df["date"], df["SMA_20"], label="SMA 20", linestyle="--", linewidth=1, color="green", alpha=0.7)
+# --- Create Subplots: Price Chart, RSI Chart, Capital Chart ---
+fig, (ax1, ax2, ax3) = plt.subplots(
+    3, 1, figsize=(14, 12), sharex=True, 
+    gridspec_kw={'height_ratios': [3, 1, 1]}
+)
 
-# Executed trades only
-ax.scatter(executed_buys, executed_buy_prices, label="Executed Buy", marker="^", color="green", s=80, alpha=0.9, zorder=5)
-ax.scatter(executed_sells, executed_sell_prices, label="Executed Sell", marker="v", color="red", s=80, alpha=0.9, zorder=5)
+# --- PRICE + TRADE CHART ---
+ax1.plot(df["date"], df["close"], label="Close Price", color="blue", linewidth=1.5)
+ax1.plot(df["date"], df["SMA_5"], label="SMA 5", linestyle="--", color="orange", alpha=0.7)
+ax1.plot(df["date"], df["SMA_20"], label="SMA 20", linestyle="--", color="green", alpha=0.7)
 
-# Format and grid
-ax.set_title("Executed Trades with SMA Strategy")
-ax.set_xlabel("Date")
-ax.set_ylabel("Price")
-ax.legend()
-ax.grid(True)
+# Executed trades
+if not executed_df.empty:
+    ax1.scatter(executed_df["entry_date"], executed_df["entry_price"], label="Executed Buy", marker="^", color="green", s=60, zorder=5)
+    ax1.scatter(executed_df["exit_date"], executed_df["exit_price"], label="Executed Sell", marker="v", color="red", s=60, zorder=5)
 
-# Format x-axis dates
-ax.xaxis.set_major_formatter(mdates.DateFormatter('%b %d'))
-ax.xaxis.set_major_locator(mdates.WeekdayLocator(interval=1))
+ax1.set_ylabel("Price (₹)")
+ax1.set_title("Executed Trades - SMA Crossover with RSI Strategy")
+ax1.legend()
+ax1.grid(True)
+
+# --- RSI CHART ---
+ax2.plot(df["date"], df["RSI"], label="RSI", color="purple", linewidth=1.2)
+ax2.axhline(30, color="red", linestyle="--", linewidth=0.8, label="Oversold (30)")
+ax2.axhline(70, color="green", linestyle="--", linewidth=0.8, label="Overbought (70)")
+ax2.set_ylabel("RSI")
+ax2.set_ylim([0, 100])
+ax2.grid(True)
+ax2.legend()
+
+# --- CAPITAL USAGE CHART ---
+ax3.plot(capital_df["date"], capital_df["capital"], label="Remaining Capital", color="black", linewidth=1.5)
+ax3.set_ylabel("₹ Cash")
+ax3.set_xlabel("Date")
+ax3.set_title("Cash Usage Over Time")
+ax3.grid(True)
+ax3.legend()
+
+# --- Format X-Axis ---
+ax3.xaxis.set_major_formatter(mdates.DateFormatter('%b %d'))
+ax3.xaxis.set_major_locator(mdates.WeekdayLocator(interval=1))
 plt.xticks(rotation=45)
 
 plt.tight_layout()
 plt.show()
 
-# Signal summary
+# --- Signal Summary ---
 print("\n--- SIGNAL SUMMARY ---")
 print(df["signal"].value_counts())
